@@ -84,8 +84,8 @@ cookieBtn.addEventListener("click", function(e) {
     document.body.appendChild(ripple);
     setTimeout(() => ripple.remove(), 600);
 
-    // logo burst at 20+ tokens/click (threshold lowered to 1 for testing)
-    if (cookiesClick >= 1) {
+    // logo burst at 5+ tokens/click
+    if (cookiesClick >= 5) {
         const count = Math.min(6 + Math.floor((cookiesClick - 20) / 20), 12);
         for (let i = 0; i < count; i++) spawnBurst(e.clientX, e.clientY);
     }
