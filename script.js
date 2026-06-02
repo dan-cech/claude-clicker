@@ -9,13 +9,18 @@ let ramCount = 0;
 let shopUnlocked = false;
 let slotUnlocked = false;
 
+let tokenMultiplier = 1;
+let bonusSecondsLeft = 0;
+let bonusInterval = null;
+
 // ── DOM refs ──
 let claudeBtn    = document.getElementById("btn-susenka");
 let serversBtn   = document.getElementById("btn-babicka");
 let dataCenterBtn = document.getElementById("btn-tovarna");
 let ramBtn       = document.getElementById("btn-upgrade-click");
 let scoreText    = document.getElementById("skore");
-let perClickText = document.getElementById("per-click");
+let perClickText  = document.getElementById("per-click");
+let perSecondText = document.getElementById("per-second");
 
 let shopPanel     = document.getElementById("shop-panel");
 let leftPanel     = document.querySelector(".left-panel");
@@ -57,15 +62,17 @@ function tryUnlockSlot() {
 
 // ── Main clicker ──
 claudeBtn.addEventListener("click", function(e) {
-    tokens += tokensPerClick;
+    const earned = tokensPerClick * tokenMultiplier;
+    tokens += earned;
     scoreText.textContent = Math.floor(tokens);
     tryUnlockShop();
     tryUnlockSlot();
 
     // float indicator
     const indicator = document.createElement("div");
-    indicator.textContent = "+" + tokensPerClick;
+    indicator.textContent = "+" + earned;
     indicator.className = "float-indicator";
+    if (tokenMultiplier === 2) indicator.style.color = "#f0c000";
     indicator.style.left = e.clientX + "px";
     indicator.style.top = e.clientY + "px";
     document.body.appendChild(indicator);
@@ -99,10 +106,11 @@ serversBtn.addEventListener("click", function() {
         serverCount++;
         tokensPerSecond += 1;
         tokens -= serverPrice;
-        serverPrice = Math.ceil(serverPrice * 1.3);
+        serverPrice = Math.ceil(serverPrice * 1.1);
         scoreText.textContent = Math.floor(tokens);
         serversBtn.textContent = "Upgrade Servers — " + serverPrice + " tokens";
         infoServers.textContent = "Owned: " + serverCount + " · +" + serverCount + "/s";
+        perSecondText.textContent = "+" + tokensPerSecond + " per second";
         floatBuyText(serversBtn, "+1/s");
     }
 });
@@ -113,10 +121,11 @@ dataCenterBtn.addEventListener("click", function() {
         dataCenterCount++;
         tokensPerSecond += 10;
         tokens -= dataCenterPrice;
-        dataCenterPrice = Math.ceil(dataCenterPrice * 1.3);
+        dataCenterPrice = Math.ceil(dataCenterPrice * 1.1);
         scoreText.textContent = Math.floor(tokens);
         dataCenterBtn.textContent = "Upgrade Data Centers — " + dataCenterPrice + " tokens";
         infoDataCenter.textContent = "Owned: " + dataCenterCount + " · +" + (dataCenterCount * 10) + "/s";
+        perSecondText.textContent = "+" + tokensPerSecond + " per second";
         floatBuyText(dataCenterBtn, "+10/s");
     }
 });
@@ -138,7 +147,7 @@ ramBtn.addEventListener("click", function() {
 
 // ── Passive income ──
 setInterval(function() {
-    tokens += tokensPerSecond / 10;
+    tokens += (tokensPerSecond / 10) * tokenMultiplier;
     scoreText.textContent = Math.floor(tokens);
     tryUnlockShop();
     tryUnlockSlot();
@@ -147,12 +156,19 @@ setInterval(function() {
 
 // ── Vaněk rain ──
 let rainActive = false;
+let rainInterval = null;
 
 function tryStartRain() {
-    if (!rainActive && tokensPerSecond >= 1000) {
+    if (!rainActive && tokensPerSecond >= 500) {
         rainActive = true;
-        setInterval(spawnVanek, 250);
+        rainInterval = setInterval(spawnVanek, 250);
     }
+}
+
+function setRainSpeed(spawnMs) {
+    if (!rainActive) return;
+    clearInterval(rainInterval);
+    rainInterval = setInterval(spawnVanek, spawnMs);
 }
 
 function spawnVanek() {
@@ -165,7 +181,9 @@ function spawnVanek() {
     img.style.height = size + "px";
     img.style.left   = (Math.random() * 96) + "%";
 
-    const duration = 2.5 + Math.random() * 2;
+    const duration = tokenMultiplier === 2
+        ? 1.0 + Math.random() * 0.8
+        : 2.5 + Math.random() * 2;
     img.style.animationDuration = duration + "s";
 
     rainContainer.appendChild(img);
@@ -205,6 +223,11 @@ function evaluateSpin(results, bet) {
         scoreText.textContent = Math.floor(tokens);
         slotResult.className = "slot-result win";
         slotResult.textContent = a + a + a + "  win +" + profit + " tokens (" + PAYOUTS[a] + "x)";
+        spawnJackpotWave();
+        const hole = document.getElementById("jackpot-hole");
+        hole.classList.remove("glow");
+        void hole.offsetWidth;
+        hole.classList.add("glow");
     } else if (a === b || b === c || a === c) {
         tokens += bet * 2;
         scoreText.textContent = Math.floor(tokens);
@@ -306,6 +329,8 @@ function spawnBurst(x, y) {
     const size = 16 + Math.random() * 16;
     el.style.width  = size + "px";
     el.style.height = size + "px";
+    if (tokenMultiplier === 2)
+        el.style.filter = "sepia(1) saturate(4) hue-rotate(-10deg) brightness(1.5)";
     document.body.appendChild(el);
 
     const angle = Math.random() * Math.PI * 2;
@@ -326,3 +351,109 @@ function spawnBurst(x, y) {
         requestAnimationFrame(animateBurst);
     }
 }
+
+function spawnJackpotParticle(x, y) {
+    const el = document.createElement("img");
+    el.src = "images/claude.png";
+    el.className = "burst-particle";
+    const size = 18 + Math.random() * 14;
+    el.style.width  = size + "px";
+    el.style.height = size + "px";
+    document.body.appendChild(el);
+
+    burstParticles.push({
+        el,
+        x, y,
+        vx:   (Math.random() - 0.5) * 2.5,
+        vy:   3 + Math.random() * 5,
+        rot:  0,
+        rotV: (Math.random() - 0.5) * 10,
+        frame: 0,
+        life:  90 + Math.floor(Math.random() * 30),
+    });
+
+    if (!burstAnimActive) {
+        burstAnimActive = true;
+        requestAnimationFrame(animateBurst);
+    }
+}
+
+function spawnJackpotWave() {
+    const hole = document.getElementById("jackpot-hole");
+    const rect = hole.getBoundingClientRect();
+
+    function wave() {
+        for (let i = 0; i < 15; i++) {
+            setTimeout(() => {
+                const x = rect.left + Math.random() * rect.width;
+                spawnJackpotParticle(x, rect.top + rect.height / 2);
+            }, i * 25);
+        }
+    }
+
+    wave();
+    setTimeout(wave, 350);
+    setTimeout(wave, 700);
+}
+
+// ── Golden Claude ──
+
+function activateBonus() {
+    tokenMultiplier = 2;
+    bonusSecondsLeft = 30;
+
+    const timerEl = document.getElementById("bonus-timer");
+    timerEl.textContent = "2× bonus — 30s";
+    timerEl.classList.add("active");
+
+    document.getElementById("bonus-aura").classList.add("active");
+    scoreText.classList.add("bonus");
+    setRainSpeed(80);
+
+    if (bonusInterval) clearInterval(bonusInterval);
+    bonusInterval = setInterval(() => {
+        bonusSecondsLeft--;
+        timerEl.textContent = "2× bonus — " + bonusSecondsLeft + "s";
+        if (bonusSecondsLeft <= 0) {
+            clearInterval(bonusInterval);
+            bonusInterval = null;
+            tokenMultiplier = 1;
+            timerEl.classList.remove("active");
+            document.getElementById("bonus-aura").classList.remove("active");
+            scoreText.classList.remove("bonus");
+            setRainSpeed(250);
+        }
+    }, 1000);
+}
+
+function spawnGoldenClaude() {
+    const img = document.createElement("img");
+    img.src = "images/claude.png";
+    img.className = "golden-claude";
+
+    const size = 55 + Math.random() * 25;
+    img.style.width  = size + "px";
+    img.style.height = size + "px";
+    img.style.left   = (5 + Math.random() * 88) + "%";
+
+    const duration = 6 + Math.random() * 4;
+    img.style.animationDuration = duration + "s, 1.2s";
+
+    img.addEventListener("click", () => {
+        img.remove();
+        activateBonus();
+    });
+
+    document.body.appendChild(img);
+    setTimeout(() => img.remove(), (duration + 0.2) * 1000);
+}
+
+function scheduleGoldenClaude() {
+    const delay = 30000 + Math.random() * 60000;
+    setTimeout(() => {
+        spawnGoldenClaude();
+        scheduleGoldenClaude();
+    }, delay);
+}
+
+scheduleGoldenClaude();

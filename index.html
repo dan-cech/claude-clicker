@@ -8,6 +8,8 @@
 </head>
 <body>
     <button id="theme-toggle" title="Toggle theme">🌙</button>
+    <div id="bonus-timer"></div>
+    <div id="bonus-aura"></div>
     <div id="rain-container"></div>
     <div class="game-wrapper">
         <div class="left-panel">
@@ -15,6 +17,7 @@
             <img id="btn-susenka" class="claude-img" src="images/claude.png" alt="CLAUDE">
             <h2>tokens: <span id="skore">0</span></h2>
             <p id="per-click">+1 per click</p>
+            <p id="per-second">+0 per second</p>
         </div>
 
         <div class="shop-panel" id="shop-panel">
@@ -43,6 +46,7 @@
             <button id="spin-btn">Spin</button>
         </div>
         <p class="slot-odds">2 of a kind → 2x &nbsp;·&nbsp; 3 of a kind → 🍒8x 🍋15x 🍊30x 🍇75x 🍑200x</p>
+        <div id="jackpot-hole"></div>
     </div>
 
     <script src="script.js"></script>
