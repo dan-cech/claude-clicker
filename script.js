@@ -408,6 +408,7 @@ function activateBonus() {
 
     document.getElementById("bonus-aura").classList.add("active");
     scoreText.classList.add("bonus");
+    rainContainer.classList.add("golden");
     setRainSpeed(80);
 
     if (bonusInterval) clearInterval(bonusInterval);
@@ -421,6 +422,7 @@ function activateBonus() {
             timerEl.classList.remove("active");
             document.getElementById("bonus-aura").classList.remove("active");
             scoreText.classList.remove("bonus");
+            rainContainer.classList.remove("golden");
             setRainSpeed(250);
         }
     }, 1000);
