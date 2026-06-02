@@ -1,27 +1,27 @@
-let cookies = 0;
-let cookiesSecond = 0;
-let cookiesClick = 1;
+let tokens = 0;
+let tokensPerSecond = 0;
+let tokensPerClick = 1;
 
-let grannyCount = 0;
-let factoryCount = 0;
-let clickUpgradeCount = 0;
+let serverCount = 0;
+let dataCenterCount = 0;
+let ramCount = 0;
 
 let shopUnlocked = false;
 let slotUnlocked = false;
 
 // ── DOM refs ──
-let cookieBtn       = document.getElementById("btn-susenka");
-let grannyBtn       = document.getElementById("btn-babicka");
-let factoryBtn      = document.getElementById("btn-tovarna");
-let clickUpgradeBtn = document.getElementById("btn-upgrade-click");
-let textSkore       = document.getElementById("skore");
-let perClickText    = document.getElementById("per-click");
+let claudeBtn    = document.getElementById("btn-susenka");
+let serversBtn   = document.getElementById("btn-babicka");
+let dataCenterBtn = document.getElementById("btn-tovarna");
+let ramBtn       = document.getElementById("btn-upgrade-click");
+let scoreText    = document.getElementById("skore");
+let perClickText = document.getElementById("per-click");
 
-let shopPanel        = document.getElementById("shop-panel");
-let leftPanel        = document.querySelector(".left-panel");
-let infoUpgradeClick = document.getElementById("info-upgrade-click");
-let infoBabicka      = document.getElementById("info-babicka");
-let infoTovarna      = document.getElementById("info-tovarna");
+let shopPanel     = document.getElementById("shop-panel");
+let leftPanel     = document.querySelector(".left-panel");
+let infoRam       = document.getElementById("info-upgrade-click");
+let infoServers   = document.getElementById("info-babicka");
+let infoDataCenter = document.getElementById("info-tovarna");
 
 const themeToggle = document.getElementById("theme-toggle");
 themeToggle.addEventListener("click", function() {
@@ -39,8 +39,9 @@ let betUpBtn    = document.getElementById("bet-up");
 let slotResult  = document.getElementById("slot-result");
 
 // ── Unlock checks ──
+
 function tryUnlockShop() {
-    if (!shopUnlocked && cookies >= 10) {
+    if (!shopUnlocked && tokens >= 10) {
         shopUnlocked = true;
         shopPanel.classList.add("visible");
         leftPanel.classList.add("shop-active");
@@ -48,22 +49,22 @@ function tryUnlockShop() {
 }
 
 function tryUnlockSlot() {
-    if (!slotUnlocked && cookies >= 50) {
+    if (!slotUnlocked && tokens >= 50) {
         slotUnlocked = true;
         slotMachine.classList.add("visible");
     }
 }
 
 // ── Main clicker ──
-cookieBtn.addEventListener("click", function(e) {
-    cookies += cookiesClick;
-    textSkore.textContent = Math.floor(cookies);
+claudeBtn.addEventListener("click", function(e) {
+    tokens += tokensPerClick;
+    scoreText.textContent = Math.floor(tokens);
     tryUnlockShop();
     tryUnlockSlot();
 
     // float indicator
     const indicator = document.createElement("div");
-    indicator.textContent = "+" + cookiesClick;
+    indicator.textContent = "+" + tokensPerClick;
     indicator.className = "float-indicator";
     indicator.style.left = e.clientX + "px";
     indicator.style.top = e.clientY + "px";
@@ -71,10 +72,10 @@ cookieBtn.addEventListener("click", function(e) {
     setTimeout(() => indicator.remove(), 800);
 
     // glow flash on image
-    cookieBtn.classList.remove("flash");
-    void cookieBtn.offsetWidth;
-    cookieBtn.classList.add("flash");
-    cookieBtn.addEventListener("animationend", () => cookieBtn.classList.remove("flash"), { once: true });
+    claudeBtn.classList.remove("flash");
+    void claudeBtn.offsetWidth;
+    claudeBtn.classList.add("flash");
+    claudeBtn.addEventListener("animationend", () => claudeBtn.classList.remove("flash"), { once: true });
 
     // ripple ring from cursor
     const ripple = document.createElement("div");
@@ -85,54 +86,60 @@ cookieBtn.addEventListener("click", function(e) {
     setTimeout(() => ripple.remove(), 600);
 
     // logo burst at 5+ tokens/click
-    if (cookiesClick >= 5) {
-        const count = Math.min(6 + Math.floor((cookiesClick - 20) / 20), 12);
+    if (tokensPerClick >= 5) {
+        const count = Math.min(6 + Math.floor((tokensPerClick - 20) / 20), 12);
         for (let i = 0; i < count; i++) spawnBurst(e.clientX, e.clientY);
     }
 });
 
 // ── Shop buttons ──
-grannyBtn.addEventListener("click", function() {
-    if (cookies >= 10) {
-        grannyCount++;
-        cookiesSecond += 1;
-        cookies -= 10;
-        textSkore.textContent = Math.floor(cookies);
-        infoBabicka.textContent = "Owned: " + grannyCount + " · +" + grannyCount + "/s";
-        floatBuyText(grannyBtn, "+1/s");
+let serverPrice = 10;
+serversBtn.addEventListener("click", function() {
+    if (tokens >= serverPrice) {
+        serverCount++;
+        tokensPerSecond += 1;
+        tokens -= serverPrice;
+        serverPrice = Math.ceil(serverPrice * 1.3);
+        scoreText.textContent = Math.floor(tokens);
+        serversBtn.textContent = "Upgrade Servers — " + serverPrice + " tokens";
+        infoServers.textContent = "Owned: " + serverCount + " · +" + serverCount + "/s";
+        floatBuyText(serversBtn, "+1/s");
     }
 });
 
-factoryBtn.addEventListener("click", function() {
-    if (cookies >= 50) {
-        factoryCount++;
-        cookiesSecond += 10;
-        cookies -= 50;
-        textSkore.textContent = Math.floor(cookies);
-        infoTovarna.textContent = "Owned: " + factoryCount + " · +" + (factoryCount * 10) + "/s";
-        floatBuyText(factoryBtn, "+10/s");
+let dataCenterPrice = 50;
+dataCenterBtn.addEventListener("click", function() {
+    if (tokens >= dataCenterPrice) {
+        dataCenterCount++;
+        tokensPerSecond += 10;
+        tokens -= dataCenterPrice;
+        dataCenterPrice = Math.ceil(dataCenterPrice * 1.3);
+        scoreText.textContent = Math.floor(tokens);
+        dataCenterBtn.textContent = "Upgrade Data Centers — " + dataCenterPrice + " tokens";
+        infoDataCenter.textContent = "Owned: " + dataCenterCount + " · +" + (dataCenterCount * 10) + "/s";
+        floatBuyText(dataCenterBtn, "+10/s");
     }
 });
 
-let clickUpgradeCost = 25;
-clickUpgradeBtn.addEventListener("click", function() {
-    if (cookies >= clickUpgradeCost) {
-        cookies -= clickUpgradeCost;
-        cookiesClick++;
-        clickUpgradeCount++;
-        clickUpgradeCost = Math.floor(clickUpgradeCost * 2);
-        clickUpgradeBtn.textContent = "⚡ Buy More RAM — " + clickUpgradeCost + " tokens (+1/click)";
-        perClickText.textContent = "+" + cookiesClick + " per click";
-        textSkore.textContent = Math.floor(cookies);
-        infoUpgradeClick.textContent = "Owned: " + clickUpgradeCount + " · +" + cookiesClick + "/click";
-        floatBuyText(clickUpgradeBtn, "+1/click");
+let ramPrice = 25;
+ramBtn.addEventListener("click", function() {
+    if (tokens >= ramPrice) {
+        tokens -= ramPrice;
+        tokensPerClick++;
+        ramCount++;
+        ramPrice = Math.ceil(ramPrice * 1.3);
+        ramBtn.textContent = "⚡ Buy More RAM — " + ramPrice + " tokens (+1/click)";
+        perClickText.textContent = "+" + tokensPerClick + " per click";
+        scoreText.textContent = Math.floor(tokens);
+        infoRam.textContent = "Owned: " + ramCount + " · +" + tokensPerClick + "/click";
+        floatBuyText(ramBtn, "+1/click");
     }
 });
 
 // ── Passive income ──
 setInterval(function() {
-    cookies += cookiesSecond / 10;
-    textSkore.textContent = Math.floor(cookies);
+    tokens += tokensPerSecond / 10;
+    scoreText.textContent = Math.floor(tokens);
     tryUnlockShop();
     tryUnlockSlot();
     tryStartRain();
@@ -142,7 +149,7 @@ setInterval(function() {
 let rainActive = false;
 
 function tryStartRain() {
-    if (!rainActive && cookiesSecond >= 1000) {
+    if (!rainActive && tokensPerSecond >= 1000) {
         rainActive = true;
         setInterval(spawnVanek, 250);
     }
@@ -194,13 +201,13 @@ function evaluateSpin(results, bet) {
     if (a === b && b === c) {
         const returned = PAYOUTS[a] * bet;
         const profit   = returned - bet;
-        cookies += returned;
-        textSkore.textContent = Math.floor(cookies);
+        tokens += returned;
+        scoreText.textContent = Math.floor(tokens);
         slotResult.className = "slot-result win";
         slotResult.textContent = a + a + a + "  win +" + profit + " tokens (" + PAYOUTS[a] + "x)";
     } else if (a === b || b === c || a === c) {
-        cookies += bet * 2;
-        textSkore.textContent = Math.floor(cookies);
+        tokens += bet * 2;
+        scoreText.textContent = Math.floor(tokens);
         slotResult.className = "slot-result push";
         slotResult.textContent = "almost — +" + bet + " tokens (2x)";
     } else {
@@ -211,15 +218,15 @@ function evaluateSpin(results, bet) {
 
 spinBtn.addEventListener("click", function() {
     const bet = getBet();
-    if (spinning || cookies < bet) return;
+    if (spinning || tokens < bet) return;
 
     spinning = true;
     spinBtn.disabled = true;
     slotResult.textContent = "";
     slotResult.className = "slot-result";
 
-    cookies -= bet;
-    textSkore.textContent = Math.floor(cookies);
+    tokens -= bet;
+    scoreText.textContent = Math.floor(tokens);
 
     const results = [pickFruit(), pickFruit(), pickFruit()];
 
