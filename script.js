@@ -5,6 +5,10 @@ let tokensPerClick = 1;
 let serverCount = 0;
 let dataCenterCount = 0;
 let ramCount = 0;
+let gpuCount = 0;
+let quantumCount = 0;
+let neuralCount = 0;
+let superCount = 0;
 
 let shopUnlocked = false;
 let slotUnlocked = false;
@@ -27,6 +31,15 @@ let leftPanel     = document.querySelector(".left-panel");
 let infoRam       = document.getElementById("info-upgrade-click");
 let infoServers   = document.getElementById("info-babicka");
 let infoDataCenter = document.getElementById("info-tovarna");
+
+let gpuBtn      = document.getElementById("btn-gpu");
+let quantumBtn  = document.getElementById("btn-quantum");
+let neuralBtn   = document.getElementById("btn-neural");
+let superBtn    = document.getElementById("btn-super");
+let infoGpu     = document.getElementById("info-gpu");
+let infoQuantum = document.getElementById("info-quantum");
+let infoNeural  = document.getElementById("info-neural");
+let infoSuper   = document.getElementById("info-super");
 
 const themeToggle = document.getElementById("theme-toggle");
 themeToggle.addEventListener("click", function() {
@@ -67,6 +80,7 @@ claudeBtn.addEventListener("click", function(e) {
     scoreText.textContent = Math.floor(tokens);
     tryUnlockShop();
     tryUnlockSlot();
+    checkReveal();
 
     // float indicator
     const indicator = document.createElement("div");
@@ -130,6 +144,11 @@ dataCenterBtn.addEventListener("click", function() {
     }
 });
 
+let gpuPrice     = 500;
+let quantumPrice = 1000;
+let neuralPrice  = 5000;
+let superPrice   = 20000;
+
 let ramPrice = 25;
 ramBtn.addEventListener("click", function() {
     if (tokens >= ramPrice) {
@@ -145,6 +164,80 @@ ramBtn.addEventListener("click", function() {
     }
 });
 
+gpuBtn.addEventListener("click", function() {
+    if (tokens >= gpuPrice) {
+        gpuCount++;
+        tokensPerSecond += 50;
+        tokens -= gpuPrice;
+        gpuPrice = Math.ceil(gpuPrice * 1.15);
+        scoreText.textContent = Math.floor(tokens);
+        gpuBtn.textContent = "GPU Cluster — " + gpuPrice + " tokens (+50/s)";
+        infoGpu.textContent = "Owned: " + gpuCount + " · +" + (gpuCount * 50) + "/s";
+        perSecondText.textContent = "+" + tokensPerSecond + " per second";
+        floatBuyText(gpuBtn, "+50/s");
+    }
+});
+
+quantumBtn.addEventListener("click", function() {
+    if (tokens >= quantumPrice) {
+        quantumCount++;
+        tokensPerClick += 5;
+        tokens -= quantumPrice;
+        quantumPrice = Math.ceil(quantumPrice * 1.3);
+        scoreText.textContent = Math.floor(tokens);
+        quantumBtn.textContent = "Quantum Processor — " + quantumPrice + " tokens (+5/click)";
+        infoQuantum.textContent = "Owned: " + quantumCount + " · +" + (quantumCount * 5) + "/click";
+        perClickText.textContent = "+" + tokensPerClick + " per click";
+        floatBuyText(quantumBtn, "+5/click");
+    }
+});
+
+neuralBtn.addEventListener("click", function() {
+    if (tokens >= neuralPrice) {
+        neuralCount++;
+        tokensPerSecond += 100;
+        tokens -= neuralPrice;
+        neuralPrice = Math.ceil(neuralPrice * 1.5);
+        scoreText.textContent = Math.floor(tokens);
+        neuralBtn.textContent = "Neural Network — " + neuralPrice + " tokens (+100/s)";
+        infoNeural.textContent = "Owned: " + neuralCount + " · +" + (neuralCount * 100) + "/s";
+        perSecondText.textContent = "+" + tokensPerSecond + " per second";
+        floatBuyText(neuralBtn, "+100/s");
+    }
+});
+
+superBtn.addEventListener("click", function() {
+    if (tokens >= superPrice) {
+        superCount++;
+        tokensPerClick += 20;
+        tokens -= superPrice;
+        superPrice = Math.ceil(superPrice * 2);
+        scoreText.textContent = Math.floor(tokens);
+        superBtn.textContent = "Superintelligence — " + superPrice + " tokens (+20/click)";
+        infoSuper.textContent = "Owned: " + superCount + " · +" + (superCount * 20) + "/click";
+        perClickText.textContent = "+" + tokensPerClick + " per click";
+        floatBuyText(superBtn, "+20/click");
+    }
+});
+
+// ── Reveal hidden upgrades ──
+const REVEAL_THRESHOLDS = {
+    "slot-tovarna": 50,
+    "slot-gpu":     500,
+    "slot-quantum": 1000,
+    "slot-neural":  5000,
+    "slot-super":   20000,
+};
+
+function checkReveal() {
+    for (const [id, threshold] of Object.entries(REVEAL_THRESHOLDS)) {
+        const slot = document.getElementById(id);
+        if (slot && slot.classList.contains("mystery") && tokens >= threshold) {
+            slot.classList.remove("mystery");
+        }
+    }
+}
+
 // ── Passive income ──
 setInterval(function() {
     tokens += (tokensPerSecond / 10) * tokenMultiplier;
@@ -152,6 +245,7 @@ setInterval(function() {
     tryUnlockShop();
     tryUnlockSlot();
     tryStartRain();
+    checkReveal();
 }, 100);
 
 // ── Vaněk rain ──
@@ -224,6 +318,7 @@ function evaluateSpin(results, bet) {
         slotResult.className = "slot-result win";
         slotResult.textContent = a + a + a + "  win +" + profit + " tokens (" + PAYOUTS[a] + "x)";
         spawnJackpotWave();
+        triggerJackpotConfetti();
         const hole = document.getElementById("jackpot-hole");
         hole.classList.remove("glow");
         void hole.offsetWidth;
@@ -394,6 +489,77 @@ function spawnJackpotWave() {
     wave();
     setTimeout(wave, 350);
     setTimeout(wave, 700);
+}
+
+// ── Confetti ──
+
+const CONFETTI_COLORS = ['#f0c000', '#ff4444', '#44aaff', '#44ee88', '#ff44cc', '#aa44ff', '#ff8833'];
+const confettiParticles = [];
+let confettiAnimActive = false;
+
+function animateConfetti() {
+    for (let i = confettiParticles.length - 1; i >= 0; i--) {
+        const p = confettiParticles[i];
+        p.vx *= 0.98;
+        p.vy  = p.vy * 0.98 + 0.35;
+        p.x  += p.vx;
+        p.y  += p.vy;
+        p.rot += p.rotV;
+        p.frame++;
+
+        const opacity = p.frame < 40 ? 1 : Math.max(0, 1 - (p.frame - 40) / 40);
+        p.el.style.left      = p.x + "px";
+        p.el.style.top       = p.y + "px";
+        p.el.style.opacity   = opacity;
+        p.el.style.transform = `rotate(${p.rot}deg)`;
+
+        if (p.frame >= p.life) {
+            p.el.remove();
+            confettiParticles.splice(i, 1);
+        }
+    }
+    if (confettiParticles.length > 0) {
+        requestAnimationFrame(animateConfetti);
+    } else {
+        confettiAnimActive = false;
+    }
+}
+
+function spawnConfettiFromCorner(x, y, dirX) {
+    for (let i = 0; i < 40; i++) {
+        const el = document.createElement("div");
+        el.className = "confetti-piece";
+        el.style.background = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
+        el.style.width  = (5 + Math.random() * 6) + "px";
+        el.style.height = (10 + Math.random() * 8) + "px";
+        document.body.appendChild(el);
+
+        const speed = 9 + Math.random() * 13;
+        const angle = (20 + Math.random() * 70) * Math.PI / 180;
+
+        confettiParticles.push({
+            el,
+            x, y,
+            vx:   dirX * Math.cos(angle) * speed,
+            vy:   -Math.sin(angle) * speed,
+            rot:  Math.random() * 360,
+            rotV: (Math.random() - 0.5) * 16,
+            frame: 0,
+            life:  80 + Math.floor(Math.random() * 40),
+        });
+    }
+
+    if (!confettiAnimActive) {
+        confettiAnimActive = true;
+        requestAnimationFrame(animateConfetti);
+    }
+}
+
+function triggerJackpotConfetti() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    spawnConfettiFromCorner(0, h, 1);
+    spawnConfettiFromCorner(w, h, -1);
 }
 
 // ── Golden Claude ──

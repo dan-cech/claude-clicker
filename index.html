@@ -18,35 +18,62 @@
             <h2>tokens: <span id="skore">0</span></h2>
             <p id="per-click">+1 per click</p>
             <p id="per-second">+0 per second</p>
+            <div class="panel-divider"></div>
+            <div class="slot-machine" id="slot-machine">
+                <h3>Slot Machine</h3>
+                <div class="slot-reels">
+                    <div class="reel" id="reel-0">🍒</div>
+                    <div class="reel" id="reel-1">🍒</div>
+                    <div class="reel" id="reel-2">🍒</div>
+                </div>
+                <p class="slot-result" id="slot-result"></p>
+                <div class="slot-controls">
+                    <button class="bet-btn" id="bet-down">−</button>
+                    <input type="number" id="bet-input" value="10" min="1">
+                    <button class="bet-btn" id="bet-up">+</button>
+                    <button id="spin-btn">Spin</button>
+                </div>
+                <p class="slot-odds">2 of a kind → 2x &nbsp;·&nbsp; 3 of a kind → 🍒8x 🍋15x 🍊30x 🍇75x 🍑200x</p>
+                <div id="jackpot-hole"></div>
+            </div>
         </div>
 
         <div class="shop-panel" id="shop-panel">
             <h3>Shop</h3>
-            <button id="btn-upgrade-click">⚡ Buy More RAM — 25 tokens (+1/click)</button>
-            <p class="upgrade-info" id="info-upgrade-click">Owned: 0 · +1/click</p>
-            <button id="btn-babicka">Upgrade Servers — 10 tokens</button>
-            <p class="upgrade-info" id="info-babicka">Owned: 0 · +0/s</p>
-            <button id="btn-tovarna">Upgrade Data Centers — 50 tokens</button>
-            <p class="upgrade-info" id="info-tovarna">Owned: 0 · +0/s</p>
+            <div class="upgrade-slot" id="slot-ram">
+                <button id="btn-upgrade-click">⚡ Buy More RAM — 25 tokens (+1/click)</button>
+                <p class="upgrade-info" id="info-upgrade-click">Owned: 0 · +1/click</p>
+            </div>
+            <div class="upgrade-slot" id="slot-servers">
+                <button id="btn-babicka">Upgrade Servers — 10 tokens</button>
+                <p class="upgrade-info" id="info-babicka">Owned: 0 · +0/s</p>
+            </div>
+            <div class="upgrade-slot mystery" id="slot-tovarna">
+                <div class="mystery-card">?</div>
+                <button id="btn-tovarna">Upgrade Data Centers — 50 tokens</button>
+                <p class="upgrade-info" id="info-tovarna"></p>
+            </div>
+            <div class="upgrade-slot mystery" id="slot-gpu">
+                <div class="mystery-card">?</div>
+                <button id="btn-gpu">GPU Cluster — 500 tokens (+50/s)</button>
+                <p class="upgrade-info" id="info-gpu"></p>
+            </div>
+            <div class="upgrade-slot mystery" id="slot-quantum">
+                <div class="mystery-card">?</div>
+                <button id="btn-quantum">Quantum Processor — 1000 tokens (+5/click)</button>
+                <p class="upgrade-info" id="info-quantum"></p>
+            </div>
+            <div class="upgrade-slot mystery" id="slot-neural">
+                <div class="mystery-card">?</div>
+                <button id="btn-neural">Neural Network — 5000 tokens (+100/s)</button>
+                <p class="upgrade-info" id="info-neural"></p>
+            </div>
+            <div class="upgrade-slot mystery" id="slot-super">
+                <div class="mystery-card">?</div>
+                <button id="btn-super">Superintelligence — 20000 tokens (+20/click)</button>
+                <p class="upgrade-info" id="info-super"></p>
+            </div>
         </div>
-    </div>
-
-    <div class="slot-machine" id="slot-machine">
-        <h3>Slot Machine</h3>
-        <div class="slot-reels">
-            <div class="reel" id="reel-0">🍒</div>
-            <div class="reel" id="reel-1">🍒</div>
-            <div class="reel" id="reel-2">🍒</div>
-        </div>
-        <p class="slot-result" id="slot-result"></p>
-        <div class="slot-controls">
-            <button class="bet-btn" id="bet-down">−</button>
-            <input type="number" id="bet-input" value="10" min="1">
-            <button class="bet-btn" id="bet-up">+</button>
-            <button id="spin-btn">Spin</button>
-        </div>
-        <p class="slot-odds">2 of a kind → 2x &nbsp;·&nbsp; 3 of a kind → 🍒8x 🍋15x 🍊30x 🍇75x 🍑200x</p>
-        <div id="jackpot-hole"></div>
     </div>
 
     <script src="script.js"></script>
