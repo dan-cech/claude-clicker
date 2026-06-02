@@ -317,7 +317,7 @@ h3 {
     color: var(--text);
     outline: none;
     padding: 4px 2px;
-    -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 #bet-input::-webkit-outer-spin-button,
