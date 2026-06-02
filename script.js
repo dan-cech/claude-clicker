@@ -41,6 +41,34 @@ let infoQuantum = document.getElementById("info-quantum");
 let infoNeural  = document.getElementById("info-neural");
 let infoSuper   = document.getElementById("info-super");
 
+const sfxClick       = new Audio("sounds/click.mp3");
+const sfxBuy         = new Audio("sounds/buy.mp3");
+const sfxDoubleBonus = new Audio("sounds/doubleBonus.mp3");
+const sfxJackpot     = new Audio("sounds/jackpot.mp3");
+const bgMusic        = new Audio("sounds/mechaSonic.mp3");
+bgMusic.loop   = true;
+bgMusic.volume = 0.5;
+
+let isMuted   = false;
+let sfxVolume = 1.0;
+let bgVolume  = 0.5;
+let musicStarted = false;
+
+function playSfx(audio) {
+    if (isMuted) return;
+    audio.currentTime = 0;
+    audio.volume = sfxVolume;
+    audio.play();
+}
+
+function startMusicOnce() {
+    if (musicStarted) return;
+    musicStarted = true;
+    if (!isMuted) bgMusic.play();
+}
+
+document.addEventListener("click", startMusicOnce, { once: true });
+
 const themeToggle = document.getElementById("theme-toggle");
 themeToggle.addEventListener("click", function() {
     document.body.classList.toggle("dark");
@@ -75,6 +103,7 @@ function tryUnlockSlot() {
 
 // ── Main clicker ──
 claudeBtn.addEventListener("click", function(e) {
+    playSfx(sfxClick);
     const earned = tokensPerClick * tokenMultiplier;
     tokens += earned;
     scoreText.textContent = Math.floor(tokens);
@@ -317,6 +346,7 @@ function evaluateSpin(results, bet) {
         scoreText.textContent = Math.floor(tokens);
         slotResult.className = "slot-result win";
         slotResult.textContent = a + a + a + "  win +" + profit + " tokens (" + PAYOUTS[a] + "x)";
+        playSfx(sfxJackpot);
         spawnJackpotWave();
         triggerJackpotConfetti();
         const hole = document.getElementById("jackpot-hole");
@@ -372,6 +402,7 @@ betInput.addEventListener("blur", function() {
 // ── Visual effects ──
 
 function floatBuyText(btn, text) {
+    playSfx(sfxBuy);
     const rect = btn.getBoundingClientRect();
     const el = document.createElement("div");
     el.textContent = text;
@@ -594,26 +625,72 @@ function activateBonus() {
     }, 1000);
 }
 
+function spawnGoldenBurst(x, y) {
+    for (let i = 0; i < 14; i++) {
+        const el = document.createElement("img");
+        el.src = "images/claude.png";
+        el.className = "burst-particle";
+        const size = 18 + Math.random() * 18;
+        el.style.width  = size + "px";
+        el.style.height = size + "px";
+        el.style.filter = "sepia(1) saturate(4) hue-rotate(-10deg) brightness(1.5)";
+        document.body.appendChild(el);
+
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 5 + Math.random() * 7;
+        burstParticles.push({
+            el,
+            x, y,
+            vx:   Math.cos(angle) * speed,
+            vy:   Math.sin(angle) * speed,
+            rot:  0,
+            rotV: (Math.random() - 0.5) * 14,
+            frame: 0,
+            life:  70 + Math.floor(Math.random() * 25),
+        });
+    }
+
+    if (!burstAnimActive) {
+        burstAnimActive = true;
+        requestAnimationFrame(animateBurst);
+    }
+}
+
 function spawnGoldenClaude() {
+    const size     = 55 + Math.random() * 25;
+    const duration = 6  + Math.random() * 4;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "golden-wrapper";
+    wrapper.style.width  = size + "px";
+    wrapper.style.height = size + "px";
+    wrapper.style.left   = (5 + Math.random() * 88) + "%";
+    wrapper.style.animationDuration = duration + "s";
+
+    const rays = document.createElement("div");
+    rays.className = "golden-rays";
+    for (let i = 0; i < 5; i++) {
+        const beam = document.createElement("div");
+        beam.className = "golden-beam";
+        beam.style.transform = `rotate(${i * 72}deg)`;
+        rays.appendChild(beam);
+    }
+
     const img = document.createElement("img");
     img.src = "images/claude.png";
     img.className = "golden-claude";
 
-    const size = 55 + Math.random() * 25;
-    img.style.width  = size + "px";
-    img.style.height = size + "px";
-    img.style.left   = (5 + Math.random() * 88) + "%";
-
-    const duration = 6 + Math.random() * 4;
-    img.style.animationDuration = duration + "s, 1.2s";
-
-    img.addEventListener("click", () => {
-        img.remove();
+    img.addEventListener("click", (e) => {
+        wrapper.remove();
+        playSfx(sfxDoubleBonus);
         activateBonus();
+        spawnGoldenBurst(e.clientX, e.clientY);
     });
 
-    document.body.appendChild(img);
-    setTimeout(() => img.remove(), (duration + 0.2) * 1000);
+    wrapper.appendChild(rays);
+    wrapper.appendChild(img);
+    document.body.appendChild(wrapper);
+    setTimeout(() => wrapper.remove(), (duration + 0.2) * 1000);
 }
 
 function scheduleGoldenClaude() {
@@ -625,3 +702,23 @@ function scheduleGoldenClaude() {
 }
 
 scheduleGoldenClaude();
+
+// ── Audio controls ──
+const muteBtn     = document.getElementById("mute-btn");
+const musicSlider = document.getElementById("music-volume");
+const sfxSlider   = document.getElementById("sfx-volume");
+
+muteBtn.addEventListener("click", function() {
+    isMuted = !isMuted;
+    muteBtn.textContent = isMuted ? "🔇" : "🔊";
+    bgMusic.muted = isMuted;
+});
+
+musicSlider.addEventListener("input", function() {
+    bgVolume = this.value / 100;
+    bgMusic.volume = bgVolume;
+});
+
+sfxSlider.addEventListener("input", function() {
+    sfxVolume = this.value / 100;
+});
