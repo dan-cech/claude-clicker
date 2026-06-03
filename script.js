@@ -378,6 +378,13 @@ spinBtn.addEventListener("click", function() {
 
     const results = [pickFruit(), pickFruit(), pickFruit()];
 
+    if (tokenMultiplier === 2 && !(results[0] === results[1] && results[1] === results[2])) {
+        if (Math.random() < 1 / 125) {
+            const lucky = pickFruit();
+            results[0] = results[1] = results[2] = lucky;
+        }
+    }
+
     reelEls.forEach((reel, i) => spinReel(reel, results[i], 200 + i * 200));
 
     setTimeout(() => {
